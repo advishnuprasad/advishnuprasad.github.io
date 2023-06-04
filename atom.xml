@@ -4,7 +4,7 @@
   <title><![CDATA[A D Vishnu Prasad]]></title>
   <link href="http://advishnuprasad.github.io/atom.xml" rel="self"/>
   <link href="http://advishnuprasad.github.io/"/>
-  <updated>2023-02-13T08:44:24+05:30</updated>
+  <updated>2023-06-04T15:59:38+05:30</updated>
   <id>http://advishnuprasad.github.io/</id>
   <author>
     <name><![CDATA[A D Vishnu Prasad]]></name>
@@ -12,6 +12,129 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Optimizing Container Management With Elastic Container Registry Lifecycle Policies]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2022/06/04/ecr-lifecycle-policy/"/>
+    <updated>2022-06-04T13:34:48+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2022/06/04/ecr-lifecycle-policy</id>
+    <content type="html"><![CDATA[<h3>Introduction:</h3>
+
+<p>In recent years, containerization has revolutionized software development and deployment. With the rise of container orchestration platforms like Kubernetes, managing containerized applications has become more streamlined and scalable. However, as the number of containers and container images grows, so does the need for efficient management and storage optimization. This is where Elastic Container Registry (ECR) lifecycle policies come into play. In this blog post, we will explore how ECR lifecycle policies can help you streamline your container management process and optimize storage costs.</p>
+
+<h3>Understanding Elastic Container Registry Lifecycle Policies:</h3>
+
+<p>Elastic Container Registry (ECR) is a fully managed container registry service provided by AWS. It enables developers to store, manage, and deploy container images securely. ECR lifecycle policies allow you to define rules that automatically manage the lifecycle of your container images. These policies help you automate the process of cleaning up unused or outdated images, reducing storage costs, and ensuring efficient resource utilization.</p>
+
+<h3>Key Benefits of ECR Lifecycle Policies:</h3>
+
+<ol>
+<li>Storage Cost Optimization: ECR lifecycle policies enable you to define rules for image expiration and deletion. By automatically removing unused or outdated images, you can free up storage space and reduce costs associated with long-term image storage.</li>
+<li>Streamlined Image Management: With lifecycle policies, you can automate the process of image clean-up based on specific criteria. This ensures that only the necessary images are retained in your registry, making it easier to manage and locate relevant images.</li>
+<li>Enhanced Security and Compliance: ECR lifecycle policies allow you to enforce security and compliance measures by defining rules for image retention and expiration. You can ensure that only approved and up-to-date images are stored, reducing the risk of vulnerabilities from outdated or compromised images.</li>
+<li>Simplified Development Workflow: By automatically cleaning up unused images, you can improve the efficiency of your development workflow. Developers can focus on the latest versions of images, reducing confusion and potential errors caused by outdated or conflicting images.</li>
+</ol>
+
+
+<h3>Implementing ECR Lifecycle Policies:</h3>
+
+<p>To implement ECR lifecycle policies, you need to define a set of rules using the Amazon ECR Lifecycle Policy Language. The language allows you to specify the conditions for image selection and the actions to be taken, such as expiring or deleting images.</p>
+
+<p>The following are some examples of rules you can define using ECR Lifecycle Policy Language:</p>
+
+<ol>
+<li>Expiration Rules: You can set expiration rules based on image tags, image age, or a combination of both. For example, you can define a policy to delete images with a specific tag that are older than 30 days.</li>
+<li>Count-Based Rules: You can define rules based on the number of images to retain. For instance, you can specify a policy to retain the five most recent images and automatically delete older images.</li>
+<li>Image Tag Rules: You can define rules based on image tags to manage image versions. For example, you can configure a policy to delete images tagged as &ldquo;dev&rdquo; or &ldquo;test&rdquo; after a specific period, while retaining images with the &ldquo;prod&rdquo; tag indefinitely.</li>
+<li>Repository-Wide Rules: You can define rules that apply to an entire repository, ensuring consistent image management across all images in the repository.</li>
+</ol>
+
+
+<h3>Sample Terrform Policy Script</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>variable "my_ecs_repos" {
+</span><span class='line'>  type = map(string)
+</span><span class='line'>  default = {
+</span><span class='line'>    "staging_web"    = "staging_web",
+</span><span class='line'>    "staging_api"    = "staging_api"
+</span><span class='line'>  }
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>resource "aws_ecr_lifecycle_policy" "Removeoldimages" {
+</span><span class='line'>  for_each   = var.ecs_repos
+</span><span class='line'>  repository = each.key
+</span><span class='line'>
+</span><span class='line'>  policy = &lt;&lt;EOF
+</span><span class='line'>    {
+</span><span class='line'>      "rules": [
+</span><span class='line'>        {
+</span><span class='line'>          "action": {
+</span><span class='line'>            "type": "expire"
+</span><span class='line'>          },
+</span><span class='line'>          "selection": {
+</span><span class='line'>            "countType": "imageCountMoreThan",
+</span><span class='line'>            "countNumber": 10,
+</span><span class='line'>            "tagStatus": "tagged",
+</span><span class='line'>            "tagPrefixList": [
+</span><span class='line'>              "${each.value}"
+</span><span class='line'>            ]
+</span><span class='line'>          },
+</span><span class='line'>          "description": "Remove old images",
+</span><span class='line'>          "rulePriority": 1
+</span><span class='line'>        }
+</span><span class='line'>      ]
+</span><span class='line'>    }
+</span><span class='line'>  EOF
+</span><span class='line'>
+</span><span class='line'>  lifecycle {
+</span><span class='line'>    prevent_destroy = true
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Conclusion:</h3>
+
+<p>Elastic Container Registry lifecycle policies offer a powerful tool for automating container image management and optimizing storage costs. By defining rules based on image age, tags, or count, you can ensure efficient resource utilization, enhanced security, and simplified development workflows. With ECR lifecycle policies, you can focus on deploying and maintaining the most relevant and secure container images, reducing overhead and improving your overall container management process.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Cloud Agnostic Microservice Deployment Architecture Using Kubernetes]]></title>
@@ -2219,40 +2342,6 @@ But how to read the records from this cursor?.</p>
 </span><span class='line'><span class="p">{</span><span class="nt">&quot;ID&quot;</span><span class="err">=&gt;</span><span class="mi">10006</span><span class="p">,</span> <span class="nt">&quot;EMAIL&quot;</span><span class="err">=&gt;</span><span class="s2">&quot;3@gmail.com&quot;</span><span class="p">}</span>
 </span><span class='line'><span class="p">{</span><span class="nt">&quot;ID&quot;</span><span class="err">=&gt;</span><span class="mi">10002</span><span class="p">,</span> <span class="nt">&quot;EMAIL&quot;</span><span class="err">=&gt;</span><span class="s2">&quot;1@gmail.com&quot;</span><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Find Type of the Request in Controller]]></title>
-    <link href="http://advishnuprasad.github.io/blog/2012/12/15/find-type-of-the-request-in-controller/"/>
-    <updated>2012-12-15T07:51:00+05:30</updated>
-    <id>http://advishnuprasad.github.io/blog/2012/12/15/find-type-of-the-request-in-controller</id>
-    <content type="html"><![CDATA[<p>Is there any way to find the type of request in controller ?</p>
-
-<h4>Yes.</h4>
-
-<p>What we do in <code>routes.rb</code> is , define the type of request to particular action.</p>
-
-<p>But, what If we want to find out the type of request in controller .</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">get?</span>
-</span><span class='line'>   <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Request is GET&quot;</span>
-</span><span class='line'><span class="k">elsif</span> <span class="n">request</span><span class="o">.</span><span class="n">post?</span>
-</span><span class='line'>   <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Request is POST&quot;</span>
-</span><span class='line'><span class="k">elsif</span> <span class="n">request</span><span class="o">.</span><span class="n">xhr?</span>
-</span><span class='line'>   <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Request is AJAX&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
 
 ]]></content>
   </entry>
