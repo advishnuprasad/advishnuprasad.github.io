@@ -4,7 +4,7 @@
   <title><![CDATA[A D Vishnu Prasad]]></title>
   <link href="http://advishnuprasad.github.io/atom.xml" rel="self"/>
   <link href="http://advishnuprasad.github.io/"/>
-  <updated>2023-06-04T15:59:38+05:30</updated>
+  <updated>2023-06-05T10:24:24+05:30</updated>
   <id>http://advishnuprasad.github.io/</id>
   <author>
     <name><![CDATA[A D Vishnu Prasad]]></name>
@@ -12,6 +12,63 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Understanding Kubernetes Update Strategies for Deployments]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2022/10/05/understanding-kubernetes-update-strategies-for-deployments/"/>
+    <updated>2022-10-05T10:21:47+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2022/10/05/understanding-kubernetes-update-strategies-for-deployments</id>
+    <content type="html"><![CDATA[<h2>Introduction:</h2>
+
+<p>Kubernetes has revolutionized the way we deploy and manage applications in modern infrastructure. With its robust orchestration capabilities, Kubernetes offers various strategies to update deployments seamlessly, ensuring high availability and minimal downtime. In this blog post, we will delve into the different update strategies available in Kubernetes and explore their benefits and use cases.</p>
+
+<h2>Rolling Update Strategy:</h2>
+
+<p>The Rolling Update strategy is the default approach used by Kubernetes for deployments. It facilitates the gradual replacement of old instances with new ones, minimizing service disruptions. Rolling updates allow you to define the maximum number of pods unavailable at any given time, ensuring the availability and stability of your application throughout the update process.
+Advantages:</p>
+
+<p>Continuous availability of the application during the update process.
+Rollbacks can be easily performed by reverting to the previous version.
+Fine-grained control over the update process, enabling you to set parameters like the maximum number of pods unavailable and the update speed.</p>
+
+<h3>Use Cases:</h3>
+
+<p>Deployments that require high availability and minimal downtime.
+Applications with a large number of replicas, where updating all instances simultaneously is not feasible.</p>
+
+<h2>Blue-Green Deployment:</h2>
+
+<p>Blue-Green deployment is a strategy that involves running two identical environments (blue and green) in parallel. The active traffic is routed to the blue environment while the green environment is updated with the new version. Once the update is complete, traffic is switched to the green environment, making it the active production environment.</p>
+
+<h3>Advantages:</h3>
+
+<p>Reduced downtime as the switch between environments is instantaneous.
+Easy rollback by directing traffic back to the blue environment in case of issues.
+Effective testing of new versions before making them live.
+Use Cases:</p>
+
+<p>Critical applications with zero tolerance for downtime.
+Extensive testing requirements before updating the production environment.</p>
+
+<h2>Canary Release:</h2>
+
+<p>Canary release strategy involves deploying a new version of an application to a small subset of users or traffic while keeping the majority on the older version. This allows for gradual monitoring and validation of the new version&rsquo;s performance and stability before rolling it out to the entire user base.
+Advantages:</p>
+
+<p>Early identification of issues or bugs in the new version.
+Controlled release of new features or updates to a subset of users.
+Reduced impact on the overall application in case of problems with the new version.</p>
+
+<h3>Use Cases:</h3>
+
+<p>Applications with a large user base, where it is essential to minimize the risk of widespread issues.
+New feature releases that need to be tested and validated before reaching the entire user base.</p>
+
+<h2>Conclusion:</h2>
+
+<p>Kubernetes provides multiple update strategies for deployments, each catering to different requirements and scenarios. Whether you opt for the Rolling Update, Blue-Green Deployment, or Canary Release strategy, it is crucial to consider factors such as downtime tolerance, testing requirements, and the size of the user base. By choosing the appropriate update strategy and leveraging Kubernetes' powerful orchestration capabilities, you can ensure smooth and efficient updates while maintaining the availability and stability of your applications.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Optimizing Container Management With Elastic Container Registry Lifecycle Policies]]></title>
@@ -2296,53 +2353,6 @@ You might want to write your own http request. Here is the way to send request w
 <p>There you go.</p>
 
 <p><code>localhost:8080/solr1</code> should be up and running</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Fetch Records From Sql Query - Ruby on Rails - Oci8 Cursor]]></title>
-    <link href="http://advishnuprasad.github.io/blog/2014/03/14/fetch-records-from-sql-query-ruby-on-rails-oci8-cursor/"/>
-    <updated>2014-03-14T18:50:26+05:30</updated>
-    <id>http://advishnuprasad.github.io/blog/2014/03/14/fetch-records-from-sql-query-ruby-on-rails-oci8-cursor</id>
-    <content type="html"><![CDATA[<p>There might be time when you can&rsquo;t use ActiveRecord finders but have to write custom
-queries to fetch the records.</p>
-
-<p>Below example is to fetch records using oci8 adapter.(i.e If you are using oracle db)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">users</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select id, email from users&quot;</span> <span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The output will be</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="no">OCI8</span><span class="o">::</span><span class="ss">Cursor</span><span class="p">:</span><span class="mh">0xf73ac30</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>which is nothing but a cursor object.
-But how to read the records from this cursor?.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">while</span> <span class="n">r</span> <span class="o">=</span> <span class="n">users</span><span class="o">.</span><span class="n">fetch_hash</span>
-</span><span class='line'>   <span class="nb">puts</span> <span class="n">users</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The output will be</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span><span class="nt">&quot;ID&quot;</span><span class="err">=&gt;</span><span class="mi">10005</span><span class="p">,</span> <span class="nt">&quot;EMAIL&quot;</span><span class="err">=&gt;</span><span class="s2">&quot;2@gmail.com&quot;</span><span class="p">}</span>
-</span><span class='line'><span class="p">{</span><span class="nt">&quot;ID&quot;</span><span class="err">=&gt;</span><span class="mi">10006</span><span class="p">,</span> <span class="nt">&quot;EMAIL&quot;</span><span class="err">=&gt;</span><span class="s2">&quot;3@gmail.com&quot;</span><span class="p">}</span>
-</span><span class='line'><span class="p">{</span><span class="nt">&quot;ID&quot;</span><span class="err">=&gt;</span><span class="mi">10002</span><span class="p">,</span> <span class="nt">&quot;EMAIL&quot;</span><span class="err">=&gt;</span><span class="s2">&quot;1@gmail.com&quot;</span><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
 ]]></content>
   </entry>
   
