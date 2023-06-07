@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ecr | A D Vishnu Prasad]]></title>
+  <link href="http://advishnuprasad.github.io/blog/categories/ecr/atom.xml" rel="self"/>
+  <link href="http://advishnuprasad.github.io/"/>
+  <updated>2023-06-07T18:52:34+05:30</updated>
+  <id>http://advishnuprasad.github.io/</id>
+  <author>
+    <name><![CDATA[A D Vishnu Prasad]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Optimizing Container Management With Elastic Container Registry Lifecycle Policies]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2022/06/04/ecr-lifecycle-policy/"/>
+    <updated>2022-06-04T13:34:48+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2022/06/04/ecr-lifecycle-policy</id>
+    <content type="html"><![CDATA[<h3>Introduction:</h3>
+
+<p>In recent years, containerization has revolutionized software development and deployment. With the rise of container orchestration platforms like Kubernetes, managing containerized applications has become more streamlined and scalable. However, as the number of containers and container images grows, so does the need for efficient management and storage optimization. This is where Elastic Container Registry (ECR) lifecycle policies come into play. In this blog post, we will explore how ECR lifecycle policies can help you streamline your container management process and optimize storage costs.</p>
+
+<h3>Understanding Elastic Container Registry Lifecycle Policies:</h3>
+
+<p>Elastic Container Registry (ECR) is a fully managed container registry service provided by AWS. It enables developers to store, manage, and deploy container images securely. ECR lifecycle policies allow you to define rules that automatically manage the lifecycle of your container images. These policies help you automate the process of cleaning up unused or outdated images, reducing storage costs, and ensuring efficient resource utilization.</p>
+
+<h3>Key Benefits of ECR Lifecycle Policies:</h3>
+
+<ol>
+<li>Storage Cost Optimization: ECR lifecycle policies enable you to define rules for image expiration and deletion. By automatically removing unused or outdated images, you can free up storage space and reduce costs associated with long-term image storage.</li>
+<li>Streamlined Image Management: With lifecycle policies, you can automate the process of image clean-up based on specific criteria. This ensures that only the necessary images are retained in your registry, making it easier to manage and locate relevant images.</li>
+<li>Enhanced Security and Compliance: ECR lifecycle policies allow you to enforce security and compliance measures by defining rules for image retention and expiration. You can ensure that only approved and up-to-date images are stored, reducing the risk of vulnerabilities from outdated or compromised images.</li>
+<li>Simplified Development Workflow: By automatically cleaning up unused images, you can improve the efficiency of your development workflow. Developers can focus on the latest versions of images, reducing confusion and potential errors caused by outdated or conflicting images.</li>
+</ol>
+
+
+<h3>Implementing ECR Lifecycle Policies:</h3>
+
+<p>To implement ECR lifecycle policies, you need to define a set of rules using the Amazon ECR Lifecycle Policy Language. The language allows you to specify the conditions for image selection and the actions to be taken, such as expiring or deleting images.</p>
+
+<p>The following are some examples of rules you can define using ECR Lifecycle Policy Language:</p>
+
+<ol>
+<li>Expiration Rules: You can set expiration rules based on image tags, image age, or a combination of both. For example, you can define a policy to delete images with a specific tag that are older than 30 days.</li>
+<li>Count-Based Rules: You can define rules based on the number of images to retain. For instance, you can specify a policy to retain the five most recent images and automatically delete older images.</li>
+<li>Image Tag Rules: You can define rules based on image tags to manage image versions. For example, you can configure a policy to delete images tagged as &ldquo;dev&rdquo; or &ldquo;test&rdquo; after a specific period, while retaining images with the &ldquo;prod&rdquo; tag indefinitely.</li>
+<li>Repository-Wide Rules: You can define rules that apply to an entire repository, ensuring consistent image management across all images in the repository.</li>
+</ol>
+
+
+<h3>Sample Terrform Policy Script</h3>
+
+<pre><code>variable "my_ecs_repos" {
+  type = map(string)
+  default = {
+    "staging_web"    = "staging_web",
+    "staging_api"    = "staging_api"
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "Removeoldimages" {
+  for_each   = var.ecs_repos
+  repository = each.key
+
+  policy = &lt;&lt;EOF
+    {
+      "rules": [
+        {
+          "action": {
+            "type": "expire"
+          },
+          "selection": {
+            "countType": "imageCountMoreThan",
+            "countNumber": 10,
+            "tagStatus": "tagged",
+            "tagPrefixList": [
+              "${each.value}"
+            ]
+          },
+          "description": "Remove old images",
+          "rulePriority": 1
+        }
+      ]
+    }
+  EOF
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+</code></pre>
+
+<h3>Conclusion:</h3>
+
+<p>Elastic Container Registry lifecycle policies offer a powerful tool for automating container image management and optimizing storage costs. By defining rules based on image age, tags, or count, you can ensure efficient resource utilization, enhanced security, and simplified development workflows. With ECR lifecycle policies, you can focus on deploying and maintaining the most relevant and secure container images, reducing overhead and improving your overall container management process.</p>
+]]></content>
+  </entry>
+  
+</feed>

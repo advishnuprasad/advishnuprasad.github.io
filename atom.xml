@@ -4,7 +4,7 @@
   <title><![CDATA[A D Vishnu Prasad]]></title>
   <link href="http://advishnuprasad.github.io/atom.xml" rel="self"/>
   <link href="http://advishnuprasad.github.io/"/>
-  <updated>2023-06-05T10:24:24+05:30</updated>
+  <updated>2023-06-07T18:52:34+05:30</updated>
   <id>http://advishnuprasad.github.io/</id>
   <author>
     <name><![CDATA[A D Vishnu Prasad]]></name>
@@ -12,6 +12,268 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Elasticsearch Clone Indices Using Python Client]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2022/12/12/elasticsearch-clone-indices-using-python-client/"/>
+    <updated>2022-12-12T18:43:08+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2022/12/12/elasticsearch-clone-indices-using-python-client</id>
+    <content type="html"><![CDATA[<h3>Introduction</h3>
+
+<p>Creating a script to automate the cloning of indices from a staging Elasticsearch cluster is a practical approach to streamline the process. By automating this task, you can save time and ensure consistency in your feature environment setup.</p>
+
+<p>Here&rsquo;s an example of how you can write a script to clone indices from your staging Elasticsearch cluster:</p>
+
+<h3>Script: Option 1</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>import json
+</span><span class='line'>import logging
+</span><span class='line'>from typing import Dict
+</span><span class='line'>
+</span><span class='line'>from elasticsearch import Elasticsearch
+</span><span class='line'>
+</span><span class='line'>logging.basicConfig(filename="es.log", level=logging.INFO)
+</span><span class='line'>
+</span><span class='line'># Creates indices in ES Cloud
+</span><span class='line'>
+</span><span class='line'>class EsClient:
+</span><span class='line'>    def __init__(self):
+</span><span class='line'>        self.es_client = Elasticsearch(
+</span><span class='line'>            ["https://es-url"],
+</span><span class='line'>            http_auth=("elastic", "dummy")
+</span><span class='line'>        )
+</span><span class='line'>        logging.info(self.es_client.ping())
+</span><span class='line'>
+</span><span class='line'>    def copy_mapping(self, source_index, destination_index):
+</span><span class='line'>
+</span><span class='line'>      # Get the mapping and settings of the source index
+</span><span class='line'>      source_mapping = self.es_client.indices.get_mapping(index=source_index)
+</span><span class='line'>      source_settings = self.es_client.indices.get_settings(index=source_index)
+</span><span class='line'>
+</span><span class='line'>      # Important: The settings brings some unwanted values as well. So pop them before creating
+</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("creation_date")
+</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("provided_name")
+</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("uuid")
+</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("version")
+</span><span class='line'>
+</span><span class='line'>      # Create the destination index with the mapping and settings of the source index
+</span><span class='line'>      response = self.es_client.indices.create(
+</span><span class='line'>          index=destination_index,
+</span><span class='line'>          body={
+</span><span class='line'>              "mappings": source_mapping[source_index]["mappings"],
+</span><span class='line'>              "settings": source_settings[source_index]["settings"]
+</span><span class='line'>          }
+</span><span class='line'>      )
+</span><span class='line'>
+</span><span class='line'>    def copy_data(self, source_index, destination_index):
+</span><span class='line'>
+</span><span class='line'>      print(f"Copying data from index {source_index} to {destination_index}")
+</span><span class='line'>
+</span><span class='line'>      # Create a search query to retrieve all documents from the source index
+</span><span class='line'>      search_body = {
+</span><span class='line'>        "query": {
+</span><span class='line'>          "match_all": {}
+</span><span class='line'>        }
+</span><span class='line'>      }
+</span><span class='line'>
+</span><span class='line'>      # Scroll through the search results and bulk index the documents into the destination index
+</span><span class='line'>      scroll_size = 1000
+</span><span class='line'>      scroll_response = self.es_client.search(
+</span><span class='line'>          index=source_index,
+</span><span class='line'>          scroll="2m",
+</span><span class='line'>          size=scroll_size,
+</span><span class='line'>          body=search_body
+</span><span class='line'>      )
+</span><span class='line'>
+</span><span class='line'>      scroll_id = scroll_response['_scroll_id']
+</span><span class='line'>      hits = scroll_response['hits']['hits']
+</span><span class='line'>
+</span><span class='line'>      while hits:
+</span><span class='line'>          bulk_body = []
+</span><span class='line'>          for hit in hits:
+</span><span class='line'>              bulk_body.append({"index": {"_index": destination_index, "_id": hit["_id"]}})
+</span><span class='line'>              bulk_body.append(hit["_source"])
+</span><span class='line'>
+</span><span class='line'>          self.es_client.bulk(body=bulk_body, refresh=True)
+</span><span class='line'>          scroll_response = self.es_client.scroll(scroll_id=scroll_id, scroll="2m")
+</span><span class='line'>          scroll_id = scroll_response['_scroll_id']
+</span><span class='line'>          hits = scroll_response['hits']['hits']
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>indices = {"source_index_name": "destination_index_name"}
+</span><span class='line'>
+</span><span class='line'>for key in indices:
+</span><span class='line'>    # print(indices[key])
+</span><span class='line'>    EsClient().copy_mapping(key, indices[key])
+</span><span class='line'>    EsClient().copy_data(key, indices[key])
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Script: Option 2</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>from elasticsearch import Elasticsearch
+</span><span class='line'>
+</span><span class='line'># Elasticsearch configuration
+</span><span class='line'>staging_host = 'staging_cluster_host'
+</span><span class='line'>staging_port = 9200
+</span><span class='line'>
+</span><span class='line'>feature_host = 'feature_cluster_host'
+</span><span class='line'>feature_port = 9200
+</span><span class='line'>
+</span><span class='line'># Connect to Elasticsearch clusters
+</span><span class='line'>staging_client = Elasticsearch([{'host': staging_host, 'port': staging_port}])
+</span><span class='line'>feature_client = Elasticsearch([{'host': feature_host, 'port': feature_port}])
+</span><span class='line'>
+</span><span class='line'># List all indices in the staging cluster
+</span><span class='line'>staging_indices = staging_client.indices.get_alias().keys()
+</span><span class='line'>
+</span><span class='line'># Clone indices to the feature cluster
+</span><span class='line'>for index in staging_indices:
+</span><span class='line'>    # Retrieve index settings and mappings from the staging cluster
+</span><span class='line'>    index_settings = staging_client.indices.get_settings(index)[index]['settings']
+</span><span class='line'>    index_mappings = staging_client.indices.get_mapping(index)[index]['mappings']
+</span><span class='line'>
+</span><span class='line'>    index_settings[index]["settings"]["index"].pop("creation_date")
+</span><span class='line'>    index_settings[index]["settings"]["index"].pop("provided_name")
+</span><span class='line'>    index_settings[index]["settings"]["index"].pop("uuid")
+</span><span class='line'>    index_settings[index]["settings"]["index"].pop("version")
+</span><span class='line'>
+</span><span class='line'>    # Create the index with the same settings and mappings in the feature cluster
+</span><span class='line'>    feature_client.indices.create(index=index, body={'settings': index_settings, 'mappings': index_mappings})
+</span><span class='line'>
+</span><span class='line'>    # Reindex data from the staging index to the feature index
+</span><span class='line'>    reindex_body = {
+</span><span class='line'>        'source': {'remote': {'host': staging_host, 'port': staging_port}, 'index': index},
+</span><span class='line'>        'dest': {'index': index}
+</span><span class='line'>    }
+</span><span class='line'>    feature_client.reindex(body=reindex_body, request_timeout=3600)  # Increase timeout if needed
+</span><span class='line'>
+</span><span class='line'>    print(f"Index '{index}' cloned to the feature cluster.")
+</span><span class='line'>
+</span><span class='line'>print("Index cloning completed.")</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Understanding Kubernetes Update Strategies for Deployments]]></title>
@@ -2283,76 +2545,6 @@ You might want to write your own http request. Here is the way to send request w
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Multiple Solr Servers in Single Machine]]></title>
-    <link href="http://advishnuprasad.github.io/blog/2014/04/26/multiple-solrs-in-single-solr-instance/"/>
-    <updated>2014-04-26T10:52:00+05:30</updated>
-    <id>http://advishnuprasad.github.io/blog/2014/04/26/multiple-solrs-in-single-solr-instance</id>
-    <content type="html"><![CDATA[<h4>Step 1:</h4>
-
-<p>Go to your solr directory.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /opt/solr141/
-</span><span class='line'>sudo mkdir home1
-</span><span class='line'>copy contents into home1 directory from other home directory.
-</span><span class='line'>sudo cp -a /opt/solr141/home/. /opt/solr141/home1
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 2:</h4>
-
-<p>create <code>solr1.xml</code> under <code>tomcat6/conf/catalina/localhost.</code> Copy from <code>solr.xml</code> and just change value to point to new home dir in environment tag</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="c">&lt;!--?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?--&gt;</span>
-</span><span class='line'><span class="nt">&lt;Context</span> <span class="na">docBase=</span><span class="s">&quot;/opt/solr/solr141/dist/apache-solr-1.4.1.war&quot;</span> <span class="na">debug=</span><span class="s">&quot;0&quot;</span> <span class="na">crossContext=</span><span class="s">&quot;true&quot;</span> <span class="nt">&gt;</span>
-</span><span class='line'><span class="nt">&lt;Environment</span> <span class="na">name=</span><span class="s">&quot;solr/home&quot;</span> <span class="na">type=</span><span class="s">&quot;java.lang.String&quot;</span> <span class="na">value=</span><span class="s">&quot;/opt/solr/solr141/home1&quot;</span> <span class="na">override=</span><span class="s">&quot;true&quot;</span> <span class="nt">/&gt;</span>
-</span><span class='line'><span class="nt">&lt;/Context&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 3:</h4>
-
-<figure class='code'><figcaption><span>/opt/solr/solr141/home1/conf/Solr-config.xml </span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>&lt;dataDir&gt;<span class="k">${</span><span class="nv">solr</span><span class="p">.data.dir:/opt/solr/solr141/home1/data</span><span class="k">}</span>&lt;/dataDir&gt;
-</span><span class='line'>&lt;locktype&gt;simple&lt;/locktype&gt;
-</span><span class='line'>&lt;unlockonstartup&gt;true&lt;/unlockonstartup&gt;
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 4:</h4>
-
-<p>Restart tomcat</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo service tomcat6 restart
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 5:</h4>
-
-<p>Since we copied from other home folder, we need to clean up the index</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>curl localhost:7585/solr1/update --data <span class="s1">&#39;*:*&#39;</span> -H <span class="s1">&#39;Content-type:text/xml; charset=utf-8&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>There you go.</p>
-
-<p><code>localhost:8080/solr1</code> should be up and running</p>
 ]]></content>
   </entry>
   

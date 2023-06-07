@@ -9,7 +9,7 @@
   <meta name="author" content="A D Vishnu Prasad">
 
   
-  <meta name="description" content="Introduction: In recent years, containerization has revolutionized software development and deployment. With the rise of container orchestration &hellip;">
+  <meta name="description" content="Introduction: Kubernetes has revolutionized the way we deploy and manage applications in modern infrastructure. With its robust orchestration &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -84,7 +84,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2022/06/04/ecr-lifecycle-policy/">Optimizing Container Management With Elastic Container Registry Lifecycle Policies</a></h1>
+      <h1 class="entry-title"><a href="/blog/2022/10/05/understanding-kubernetes-update-strategies-for-deployments/">Understanding Kubernetes Update Strategies for Deployments</a></h1>
     
     
       <p class="meta">
@@ -93,128 +93,62 @@
 
 
 
-<time class='entry-date' datetime='2022-06-04T13:34:48+05:30'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2022</span></span> <span class='time'>1:34 pm</span></time>
+<time class='entry-date' datetime='2022-10-05T10:21:47+05:30'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2022</span></span> <span class='time'>10:21 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>Introduction:</h3>
+  <div class="entry-content"><h2>Introduction:</h2>
 
-<p>In recent years, containerization has revolutionized software development and deployment. With the rise of container orchestration platforms like Kubernetes, managing containerized applications has become more streamlined and scalable. However, as the number of containers and container images grows, so does the need for efficient management and storage optimization. This is where Elastic Container Registry (ECR) lifecycle policies come into play. In this blog post, we will explore how ECR lifecycle policies can help you streamline your container management process and optimize storage costs.</p>
+<p>Kubernetes has revolutionized the way we deploy and manage applications in modern infrastructure. With its robust orchestration capabilities, Kubernetes offers various strategies to update deployments seamlessly, ensuring high availability and minimal downtime. In this blog post, we will delve into the different update strategies available in Kubernetes and explore their benefits and use cases.</p>
 
-<h3>Understanding Elastic Container Registry Lifecycle Policies:</h3>
+<h2>Rolling Update Strategy:</h2>
 
-<p>Elastic Container Registry (ECR) is a fully managed container registry service provided by AWS. It enables developers to store, manage, and deploy container images securely. ECR lifecycle policies allow you to define rules that automatically manage the lifecycle of your container images. These policies help you automate the process of cleaning up unused or outdated images, reducing storage costs, and ensuring efficient resource utilization.</p>
+<p>The Rolling Update strategy is the default approach used by Kubernetes for deployments. It facilitates the gradual replacement of old instances with new ones, minimizing service disruptions. Rolling updates allow you to define the maximum number of pods unavailable at any given time, ensuring the availability and stability of your application throughout the update process.
+Advantages:</p>
 
-<h3>Key Benefits of ECR Lifecycle Policies:</h3>
+<p>Continuous availability of the application during the update process.
+Rollbacks can be easily performed by reverting to the previous version.
+Fine-grained control over the update process, enabling you to set parameters like the maximum number of pods unavailable and the update speed.</p>
 
-<ol>
-<li>Storage Cost Optimization: ECR lifecycle policies enable you to define rules for image expiration and deletion. By automatically removing unused or outdated images, you can free up storage space and reduce costs associated with long-term image storage.</li>
-<li>Streamlined Image Management: With lifecycle policies, you can automate the process of image clean-up based on specific criteria. This ensures that only the necessary images are retained in your registry, making it easier to manage and locate relevant images.</li>
-<li>Enhanced Security and Compliance: ECR lifecycle policies allow you to enforce security and compliance measures by defining rules for image retention and expiration. You can ensure that only approved and up-to-date images are stored, reducing the risk of vulnerabilities from outdated or compromised images.</li>
-<li>Simplified Development Workflow: By automatically cleaning up unused images, you can improve the efficiency of your development workflow. Developers can focus on the latest versions of images, reducing confusion and potential errors caused by outdated or conflicting images.</li>
-</ol>
+<h3>Use Cases:</h3>
 
+<p>Deployments that require high availability and minimal downtime.
+Applications with a large number of replicas, where updating all instances simultaneously is not feasible.</p>
 
-<h3>Implementing ECR Lifecycle Policies:</h3>
+<h2>Blue-Green Deployment:</h2>
 
-<p>To implement ECR lifecycle policies, you need to define a set of rules using the Amazon ECR Lifecycle Policy Language. The language allows you to specify the conditions for image selection and the actions to be taken, such as expiring or deleting images.</p>
+<p>Blue-Green deployment is a strategy that involves running two identical environments (blue and green) in parallel. The active traffic is routed to the blue environment while the green environment is updated with the new version. Once the update is complete, traffic is switched to the green environment, making it the active production environment.</p>
 
-<p>The following are some examples of rules you can define using ECR Lifecycle Policy Language:</p>
+<h3>Advantages:</h3>
 
-<ol>
-<li>Expiration Rules: You can set expiration rules based on image tags, image age, or a combination of both. For example, you can define a policy to delete images with a specific tag that are older than 30 days.</li>
-<li>Count-Based Rules: You can define rules based on the number of images to retain. For instance, you can specify a policy to retain the five most recent images and automatically delete older images.</li>
-<li>Image Tag Rules: You can define rules based on image tags to manage image versions. For example, you can configure a policy to delete images tagged as &ldquo;dev&rdquo; or &ldquo;test&rdquo; after a specific period, while retaining images with the &ldquo;prod&rdquo; tag indefinitely.</li>
-<li>Repository-Wide Rules: You can define rules that apply to an entire repository, ensuring consistent image management across all images in the repository.</li>
-</ol>
+<p>Reduced downtime as the switch between environments is instantaneous.
+Easy rollback by directing traffic back to the blue environment in case of issues.
+Effective testing of new versions before making them live.
+Use Cases:</p>
 
+<p>Critical applications with zero tolerance for downtime.
+Extensive testing requirements before updating the production environment.</p>
 
-<h3>Sample Terrform Policy Script</h3>
+<h2>Canary Release:</h2>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>variable "my_ecs_repos" {
-</span><span class='line'>  type = map(string)
-</span><span class='line'>  default = {
-</span><span class='line'>    "staging_web"    = "staging_web",
-</span><span class='line'>    "staging_api"    = "staging_api"
-</span><span class='line'>  }
-</span><span class='line'>}
-</span><span class='line'>
-</span><span class='line'>resource "aws_ecr_lifecycle_policy" "Removeoldimages" {
-</span><span class='line'>  for_each   = var.ecs_repos
-</span><span class='line'>  repository = each.key
-</span><span class='line'>
-</span><span class='line'>  policy = &lt;&lt;EOF
-</span><span class='line'>    {
-</span><span class='line'>      "rules": [
-</span><span class='line'>        {
-</span><span class='line'>          "action": {
-</span><span class='line'>            "type": "expire"
-</span><span class='line'>          },
-</span><span class='line'>          "selection": {
-</span><span class='line'>            "countType": "imageCountMoreThan",
-</span><span class='line'>            "countNumber": 10,
-</span><span class='line'>            "tagStatus": "tagged",
-</span><span class='line'>            "tagPrefixList": [
-</span><span class='line'>              "${each.value}"
-</span><span class='line'>            ]
-</span><span class='line'>          },
-</span><span class='line'>          "description": "Remove old images",
-</span><span class='line'>          "rulePriority": 1
-</span><span class='line'>        }
-</span><span class='line'>      ]
-</span><span class='line'>    }
-</span><span class='line'>  EOF
-</span><span class='line'>
-</span><span class='line'>  lifecycle {
-</span><span class='line'>    prevent_destroy = true
-</span><span class='line'>  }
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+<p>Canary release strategy involves deploying a new version of an application to a small subset of users or traffic while keeping the majority on the older version. This allows for gradual monitoring and validation of the new version&rsquo;s performance and stability before rolling it out to the entire user base.
+Advantages:</p>
 
+<p>Early identification of issues or bugs in the new version.
+Controlled release of new features or updates to a subset of users.
+Reduced impact on the overall application in case of problems with the new version.</p>
 
-<h3>Conclusion:</h3>
+<h3>Use Cases:</h3>
 
-<p>Elastic Container Registry lifecycle policies offer a powerful tool for automating container image management and optimizing storage costs. By defining rules based on image age, tags, or count, you can ensure efficient resource utilization, enhanced security, and simplified development workflows. With ECR lifecycle policies, you can focus on deploying and maintaining the most relevant and secure container images, reducing overhead and improving your overall container management process.</p>
+<p>Applications with a large user base, where it is essential to minimize the risk of widespread issues.
+New feature releases that need to be tested and validated before reaching the entire user base.</p>
+
+<h2>Conclusion:</h2>
+
+<p>Kubernetes provides multiple update strategies for deployments, each catering to different requirements and scenarios. Whether you opt for the Rolling Update, Blue-Green Deployment, or Canary Release strategy, it is crucial to consider factors such as downtime tolerance, testing requirements, and the size of the user base. By choosing the appropriate update strategy and leveraging Kubernetes' powerful orchestration capabilities, you can ensure smooth and efficient updates while maintaining the availability and stability of your applications.</p>
 </div>
   
   
@@ -237,6 +171,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2022/12/12/elasticsearch-clone-indices-using-python-client/">Elasticsearch Clone Indices Using Python Client</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2022/10/05/understanding-kubernetes-update-strategies-for-deployments/">Understanding Kubernetes Update Strategies for Deployments</a>
@@ -272,10 +210,6 @@
     
       <li class="post">
         <a href="/blog/2017/11/09/elasticsearch-backup-and-restore-from-azure-blob-storage/">Elasticsearch Backup and Restore From Azure Blob Storage</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2017/10/31/docker-commands/">Docker Commands</a>
       </li>
     
   </ul>

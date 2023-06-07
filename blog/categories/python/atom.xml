@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Python, | A D Vishnu Prasad]]></title>
+  <title><![CDATA[Category: Python | A D Vishnu Prasad]]></title>
   <link href="http://advishnuprasad.github.io/blog/categories/python/atom.xml" rel="self"/>
   <link href="http://advishnuprasad.github.io/"/>
-  <updated>2023-06-05T10:24:24+05:30</updated>
+  <updated>2023-06-07T18:52:34+05:30</updated>
   <id>http://advishnuprasad.github.io/</id>
   <author>
     <name><![CDATA[A D Vishnu Prasad]]></name>
@@ -14,49 +14,142 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Send Hipchat Notifications Using Python]]></title>
-    <link href="http://advishnuprasad.github.io/blog/2017/03/07/send-hipchat-notifications-using-python/"/>
-    <updated>2017-03-07T18:57:53+05:30</updated>
-    <id>http://advishnuprasad.github.io/blog/2017/03/07/send-hipchat-notifications-using-python</id>
-    <content type="html"><![CDATA[<p>There might be scenarios where you want to send hipchat notifications programatically.
-Following python script will help you to create notifications in 3 simple steps.</p>
+    <title type="html"><![CDATA[Elasticsearch Clone Indices Using Python Client]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2022/12/12/elasticsearch-clone-indices-using-python-client/"/>
+    <updated>2022-12-12T18:43:08+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2022/12/12/elasticsearch-clone-indices-using-python-client</id>
+    <content type="html"><![CDATA[<h3>Introduction</h3>
 
-<p><img src="/images/hipchat.png" alt="Hipchat Image" />
-<sub><sup> * Image credit: google images </sub></sup></p>
+<p>Creating a script to automate the cloning of indices from a staging Elasticsearch cluster is a practical approach to streamline the process. By automating this task, you can save time and ensure consistency in your feature environment setup.</p>
 
-<!-- ![Hipchat Image](http://localhost:4000/images/hipchat.png) -->
+<p>Here&rsquo;s an example of how you can write a script to clone indices from your staging Elasticsearch cluster:</p>
+
+<h3>Script: Option 1</h3>
+
+<pre><code>import json
+import logging
+from typing import Dict
+
+from elasticsearch import Elasticsearch
+
+logging.basicConfig(filename="es.log", level=logging.INFO)
+
+# Creates indices in ES Cloud
+
+class EsClient:
+    def __init__(self):
+        self.es_client = Elasticsearch(
+            ["https://es-url"],
+            http_auth=("elastic", "dummy")
+        )
+        logging.info(self.es_client.ping())
+
+    def copy_mapping(self, source_index, destination_index):
+
+      # Get the mapping and settings of the source index
+      source_mapping = self.es_client.indices.get_mapping(index=source_index)
+      source_settings = self.es_client.indices.get_settings(index=source_index)
+
+      # Important: The settings brings some unwanted values as well. So pop them before creating
+      source_settings[source_index]["settings"]["index"].pop("creation_date")
+      source_settings[source_index]["settings"]["index"].pop("provided_name")
+      source_settings[source_index]["settings"]["index"].pop("uuid")
+      source_settings[source_index]["settings"]["index"].pop("version")
+
+      # Create the destination index with the mapping and settings of the source index
+      response = self.es_client.indices.create(
+          index=destination_index,
+          body={
+              "mappings": source_mapping[source_index]["mappings"],
+              "settings": source_settings[source_index]["settings"]
+          }
+      )
+
+    def copy_data(self, source_index, destination_index):
+
+      print(f"Copying data from index {source_index} to {destination_index}")
+
+      # Create a search query to retrieve all documents from the source index
+      search_body = {
+        "query": {
+          "match_all": {}
+        }
+      }
+
+      # Scroll through the search results and bulk index the documents into the destination index
+      scroll_size = 1000
+      scroll_response = self.es_client.search(
+          index=source_index,
+          scroll="2m",
+          size=scroll_size,
+          body=search_body
+      )
+
+      scroll_id = scroll_response['_scroll_id']
+      hits = scroll_response['hits']['hits']
+
+      while hits:
+          bulk_body = []
+          for hit in hits:
+              bulk_body.append({"index": {"_index": destination_index, "_id": hit["_id"]}})
+              bulk_body.append(hit["_source"])
+
+          self.es_client.bulk(body=bulk_body, refresh=True)
+          scroll_response = self.es_client.scroll(scroll_id=scroll_id, scroll="2m")
+          scroll_id = scroll_response['_scroll_id']
+          hits = scroll_response['hits']['hits']
 
 
-<h3>Step 1:</h3>
+indices = {"source_index_name": "destination_index_name"}
 
-<p>Generate your auth token from your hipchat account.
-<code>Hipchat -&gt; Account Settings -&gt; API Access</code></p>
-
-<h3>Step 2:</h3>
-
-<p>Note: I am using hipchat api v1.</p>
-
-<pre><code class="python hipchat.py">#!/usr/bin/env python3.5
-
-import requests, json
-
-def notify(message, deployer = 'Vishnu', color = 'green'):
-    url = "https://api.hipchat.com/v1/rooms/message?auth_token=&lt;auth_token&gt;&amp;format=json"
-    payload = { "room_id" : "deployments" , "from" : deployer, "message" : message, "color" : color, "notify" : 1 }
-    requests.post(url, params=payload)
+for key in indices:
+    # print(indices[key])
+    EsClient().copy_mapping(key, indices[key])
+    EsClient().copy_data(key, indices[key])
 </code></pre>
 
-<h3>Step 3:</h3>
+<h3>Script: Option 2</h3>
 
-<pre><code class="python deployer.py">#!/usr/bin/env python3.5
+<pre><code>from elasticsearch import Elasticsearch
 
-import hipchat
+# Elasticsearch configuration
+staging_host = 'staging_cluster_host'
+staging_port = 9200
 
-# For successful notif
-hipchat.notify("Deployment started", "Vishnu", "green")
+feature_host = 'feature_cluster_host'
+feature_port = 9200
 
-# If you want error notif
-hipchat.notify("Deployment failed", "Vishnu", "red")
+# Connect to Elasticsearch clusters
+staging_client = Elasticsearch([{'host': staging_host, 'port': staging_port}])
+feature_client = Elasticsearch([{'host': feature_host, 'port': feature_port}])
+
+# List all indices in the staging cluster
+staging_indices = staging_client.indices.get_alias().keys()
+
+# Clone indices to the feature cluster
+for index in staging_indices:
+    # Retrieve index settings and mappings from the staging cluster
+    index_settings = staging_client.indices.get_settings(index)[index]['settings']
+    index_mappings = staging_client.indices.get_mapping(index)[index]['mappings']
+
+    index_settings[index]["settings"]["index"].pop("creation_date")
+    index_settings[index]["settings"]["index"].pop("provided_name")
+    index_settings[index]["settings"]["index"].pop("uuid")
+    index_settings[index]["settings"]["index"].pop("version")
+
+    # Create the index with the same settings and mappings in the feature cluster
+    feature_client.indices.create(index=index, body={'settings': index_settings, 'mappings': index_mappings})
+
+    # Reindex data from the staging index to the feature index
+    reindex_body = {
+        'source': {'remote': {'host': staging_host, 'port': staging_port}, 'index': index},
+        'dest': {'index': index}
+    }
+    feature_client.reindex(body=reindex_body, request_timeout=3600)  # Increase timeout if needed
+
+    print(f"Index '{index}' cloned to the feature cluster.")
+
+print("Index cloning completed.")
 </code></pre>
 ]]></content>
   </entry>
