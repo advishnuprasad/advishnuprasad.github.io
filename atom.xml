@@ -4,7 +4,7 @@
   <title><![CDATA[A D Vishnu Prasad]]></title>
   <link href="http://advishnuprasad.github.io/atom.xml" rel="self"/>
   <link href="http://advishnuprasad.github.io/"/>
-  <updated>2023-06-07T18:52:34+05:30</updated>
+  <updated>2024-02-03T22:08:49+05:30</updated>
   <id>http://advishnuprasad.github.io/</id>
   <author>
     <name><![CDATA[A D Vishnu Prasad]]></name>
@@ -12,6 +12,83 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[SSH Into EC2 Instances Without Opening Port 22]]></title>
+    <link href="http://advishnuprasad.github.io/blog/2024/02/03/ssh-into-ec2-instances-without-opening-port-22/"/>
+    <updated>2024-02-03T21:42:54+05:30</updated>
+    <id>http://advishnuprasad.github.io/blog/2024/02/03/ssh-into-ec2-instances-without-opening-port-22</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p>The easy way to access an EC2 instance from your terminal is by running <code>ssh</code> command. But for that you need to open
+port 22 for your IP and most of the time the developers tend to open it for the public. This results in a big security
+hole.</p>
+
+<p>So how do we access the EC2 instance without opening port 22 at all? There is a way!
+You can make use of AWS SSM to access the instance and you don&rsquo;t have to open port 22 at all.
+This is a best practice and good for your compliance security reports.</p>
+
+<h2>AWS Session Manager</h2>
+
+<p>A bastion host, sometimes called a jump box, is a server that provides a single point of access from an external network to the resources located in a private network. A server exposed to an external public network, such as the internet, poses a potential security risk for unauthorized access. It’s important to secure and control access to these servers.</p>
+
+<p>This pattern describes how you can use Session Manager (<a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/access-a-bastion-host-by-using-session-manager-and-amazon-ec2-instance-connect.html">Reference</a>) and Amazon EC2 Instance Connect to securely connect to an Amazon Elastic Compute Cloud (Amazon EC2) bastion host deployed in your AWS account. Session Manager is a capability of AWS Systems Manager. The benefits of this pattern include:</p>
+
+<ul>
+<li><p>The deployed bastion host doesn’t have any open, inbound ports exposed to the public internet. This reduces the potential attack surface.</p></li>
+<li><p>You don’t need to store and maintain long-term Secure Shell (SSH) keys in your AWS account. Instead, each user generates a new SSH key pair each time they connect to the bastion host. AWS Identity and Access Management (IAM) policies that are attached to the user’s AWS credentials control access to the bastion host.</p></li>
+</ul>
+
+
+<h2>Setup Guide</h2>
+
+<h3>Prerequisites</h3>
+
+<ol>
+<li><strong>AWS CLI</strong>: Ensure you have the AWS Command Line Interface (CLI) installed on your macOS. If not installed, you can download and install it from the <a href="https://aws.amazon.com/cli/">AWS CLI official website</a>.</li>
+<li><strong>Configure AWS CLI</strong>: If you haven&rsquo;t configured your AWS CLI yet, you need to do it by running the following command and providing your AWS Access Key ID, Secret Access Key, and default region:</li>
+<li><p>The AWS user must have the following role <code>AmazonSSMManagedInstanceCore</code> attached to their user policy</p>
+
+<pre><code>aws configure
+</code></pre>
+
+<p>This step is required to ensure the AWS CLI can authenticate and access your AWS account.</p></li>
+</ol>
+
+
+<h3>Install the Session Manager plugin on macOS</h3>
+
+<p>For other OS follow this <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html">link</a></p>
+
+<ol>
+<li><p><strong>Download the bundled installer</strong>.</p>
+
+<pre><code>curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" -o "sessionmanager-bundle.zip"
+</code></pre></li>
+<li><p><strong>Unzip the package</strong>.</p>
+
+<pre><code>unzip sessionmanager-bundle.zip
+</code></pre></li>
+<li><p><strong>Run the install command</strong>.</p>
+
+<pre><code>sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
+</code></pre></li>
+<li><p><strong>Remove the bundled installer</strong>.</p>
+
+<pre><code>rm sessionmanager-bundle.zip
+rm -rf sessionmanager-bundle
+</code></pre></li>
+</ol>
+
+
+<h3>Connect to an EC2 Instance using Session Manager</h3>
+
+<pre><code class="``">  aws ssm start-session --target &lt;Instance ID&gt; --region ap-southeast-2
+</code></pre>
+
+<p>That&rsquo;s it. Now you should be able to access EC2 Instance without worrying about port 22.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Elasticsearch Clone Indices Using Python Client]]></title>
@@ -2438,113 +2515,6 @@ You might want to write your own http request. Here is the way to send request w
 <p>Now navigate to <code>localhost:3000/docs</code></p>
 
 <p><img src="http://advishnuprasad.github.io/images/api_doc1.png" alt="API docs image" /></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Active Model Serializers]]></title>
-    <link href="http://advishnuprasad.github.io/blog/2014/11/14/active-model-serializers/"/>
-    <updated>2014-11-14T19:42:22+05:30</updated>
-    <id>http://advishnuprasad.github.io/blog/2014/11/14/active-model-serializers</id>
-    <content type="html"><![CDATA[<h3>When to use active model serializer ?</h3>
-
-<p>When you have your app running on both browser and mobile app, and if you have a backend rails server then active model serialiser is a perfect gem for serving APIs.</p>
-
-<h3>Gems</h3>
-
-<p>There are other gems like rabl but I personally prefer <code>active_model_serializers</code> gem because this is extremely easy to use and it has lot of + points.</p>
-
-<h4>Step 1 : Add it to your Gemfile</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">gem</span> <span class="s1">&#39;active_model_serializers&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 0.9.3&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 2 : Create a serializer</h4>
-
-<p>Create a serializer file by running</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">rails</span> <span class="n">g</span> <span class="n">serializer</span> <span class="n">user</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>which will create <code>app/serializers/user_serializer.rb</code></p>
-
-<h4>Step 3 :</h4>
-
-<p>In serializer, you can add attributes, associations, custom methods.</p>
-
-<figure class='code'><figcaption><span>user_serializer.rb</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UserSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
-</span><span class='line'>  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:followers</span><span class="p">,</span> <span class="ss">:timestamp</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So here id and name are user fields. Followers is an association in user. timestamp is a custom method.</p>
-
-<p>You can define that method like this.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">timestamp</span>
-</span><span class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="err">“</span><span class="o">%</span><span class="n">B</span> <span class="o">%</span><span class="n">d</span> <span class="o">%</span><span class="n">Y</span><span class="err">”</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>Step 4 :</h4>
-
-<p>In your controller, make sure you are rendering json and html</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">respond_with</span> <span class="vi">@user</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>When you visit <code>/users/1.json</code></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;user&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;foodoo@example.com&quot;</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Foo doo&quot;</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;microposts&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span class='line'>            <span class="p">{</span>
-</span><span class='line'>                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;This is a micropost&quot;</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2014-11-11T16:11:08.500Z&quot;</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;updated_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2014-11-11T16:11:08.500Z&quot;</span>
-</span><span class='line'>            <span class="p">}</span>
-</span><span class='line'>        <span class="p">],</span>
-</span><span class='line'>        <span class="nt">&quot;followers&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
 ]]></content>
   </entry>
   

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://advishnuprasad.github.io/blog/2024/02/03/ssh-into-ec2-instances-without-opening-port-22/</loc>
+<lastmod>2024-02-03T21:42:54+05:30</lastmod>
+</url>
+<url>
 <loc>http://advishnuprasad.github.io/blog/2022/12/12/elasticsearch-clone-indices-using-python-client/</loc>
 <lastmod>2022-12-12T18:43:08+05:30</lastmod>
 </url>
@@ -260,6 +264,9 @@
 <loc>http://advishnuprasad.github.io/blog/categories/python/</loc>
 </url>
 <url>
+<loc>http://advishnuprasad.github.io/blog/categories/compliance/</loc>
+</url>
+<url>
 <loc>http://advishnuprasad.github.io/posts/2/</loc>
 </url>
 <url>
@@ -330,5 +337,8 @@
 </url>
 <url>
 <loc>http://advishnuprasad.github.io/posts/25/</loc>
+</url>
+<url>
+<loc>http://advishnuprasad.github.io/posts/26/</loc>
 </url>
 </urlset>
