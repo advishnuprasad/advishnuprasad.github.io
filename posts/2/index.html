@@ -9,7 +9,8 @@
   <meta name="author" content="A D Vishnu Prasad">
 
   
-  <meta name="description" content="Introduction Creating a script to automate the cloning of indices from a staging Elasticsearch cluster is a practical approach to streamline the &hellip;">
+  <meta name="description" content="Introduction The easy way to access an EC2 instance from your terminal is by running ssh command. But for that you need to open
+port 22 for your IP &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -84,7 +85,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2022/12/12/elasticsearch-clone-indices-using-python-client/">Elasticsearch Clone Indices Using Python Client</a></h1>
+      <h1 class="entry-title"><a href="/blog/2024/02/03/ssh-into-ec2-instances-without-opening-port-22/">SSH Into EC2 Instances Without Opening Port 22</a></h1>
     
     
       <p class="meta">
@@ -93,267 +94,82 @@
 
 
 
-<time class='entry-date' datetime='2022-12-12T18:43:08+05:30'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2022</span></span> <span class='time'>6:43 pm</span></time>
+<time class='entry-date' datetime='2024-02-03T21:42:54+05:30'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2024</span></span> <span class='time'>9:42 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>Introduction</h3>
+  <div class="entry-content"><h2>Introduction</h2>
 
-<p>Creating a script to automate the cloning of indices from a staging Elasticsearch cluster is a practical approach to streamline the process. By automating this task, you can save time and ensure consistency in your feature environment setup.</p>
+<p>The easy way to access an EC2 instance from your terminal is by running <code>ssh</code> command. But for that you need to open
+port 22 for your IP and most of the time the developers tend to open it for the public. This results in a big security
+hole.</p>
 
-<p>Here&rsquo;s an example of how you can write a script to clone indices from your staging Elasticsearch cluster:</p>
+<p>So how do we access the EC2 instance without opening port 22 at all? There is a way!
+You can make use of AWS SSM to access the instance and you don&rsquo;t have to open port 22 at all.
+This is a best practice and good for your compliance security reports.</p>
 
-<h3>Script: Option 1</h3>
+<h2>AWS Session Manager</h2>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>import json
-</span><span class='line'>import logging
-</span><span class='line'>from typing import Dict
-</span><span class='line'>
-</span><span class='line'>from elasticsearch import Elasticsearch
-</span><span class='line'>
-</span><span class='line'>logging.basicConfig(filename="es.log", level=logging.INFO)
-</span><span class='line'>
-</span><span class='line'># Creates indices in ES Cloud
-</span><span class='line'>
-</span><span class='line'>class EsClient:
-</span><span class='line'>    def __init__(self):
-</span><span class='line'>        self.es_client = Elasticsearch(
-</span><span class='line'>            ["https://es-url"],
-</span><span class='line'>            http_auth=("elastic", "dummy")
-</span><span class='line'>        )
-</span><span class='line'>        logging.info(self.es_client.ping())
-</span><span class='line'>
-</span><span class='line'>    def copy_mapping(self, source_index, destination_index):
-</span><span class='line'>
-</span><span class='line'>      # Get the mapping and settings of the source index
-</span><span class='line'>      source_mapping = self.es_client.indices.get_mapping(index=source_index)
-</span><span class='line'>      source_settings = self.es_client.indices.get_settings(index=source_index)
-</span><span class='line'>
-</span><span class='line'>      # Important: The settings brings some unwanted values as well. So pop them before creating
-</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("creation_date")
-</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("provided_name")
-</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("uuid")
-</span><span class='line'>      source_settings[source_index]["settings"]["index"].pop("version")
-</span><span class='line'>
-</span><span class='line'>      # Create the destination index with the mapping and settings of the source index
-</span><span class='line'>      response = self.es_client.indices.create(
-</span><span class='line'>          index=destination_index,
-</span><span class='line'>          body={
-</span><span class='line'>              "mappings": source_mapping[source_index]["mappings"],
-</span><span class='line'>              "settings": source_settings[source_index]["settings"]
-</span><span class='line'>          }
-</span><span class='line'>      )
-</span><span class='line'>
-</span><span class='line'>    def copy_data(self, source_index, destination_index):
-</span><span class='line'>
-</span><span class='line'>      print(f"Copying data from index {source_index} to {destination_index}")
-</span><span class='line'>
-</span><span class='line'>      # Create a search query to retrieve all documents from the source index
-</span><span class='line'>      search_body = {
-</span><span class='line'>        "query": {
-</span><span class='line'>          "match_all": {}
-</span><span class='line'>        }
-</span><span class='line'>      }
-</span><span class='line'>
-</span><span class='line'>      # Scroll through the search results and bulk index the documents into the destination index
-</span><span class='line'>      scroll_size = 1000
-</span><span class='line'>      scroll_response = self.es_client.search(
-</span><span class='line'>          index=source_index,
-</span><span class='line'>          scroll="2m",
-</span><span class='line'>          size=scroll_size,
-</span><span class='line'>          body=search_body
-</span><span class='line'>      )
-</span><span class='line'>
-</span><span class='line'>      scroll_id = scroll_response['_scroll_id']
-</span><span class='line'>      hits = scroll_response['hits']['hits']
-</span><span class='line'>
-</span><span class='line'>      while hits:
-</span><span class='line'>          bulk_body = []
-</span><span class='line'>          for hit in hits:
-</span><span class='line'>              bulk_body.append({"index": {"_index": destination_index, "_id": hit["_id"]}})
-</span><span class='line'>              bulk_body.append(hit["_source"])
-</span><span class='line'>
-</span><span class='line'>          self.es_client.bulk(body=bulk_body, refresh=True)
-</span><span class='line'>          scroll_response = self.es_client.scroll(scroll_id=scroll_id, scroll="2m")
-</span><span class='line'>          scroll_id = scroll_response['_scroll_id']
-</span><span class='line'>          hits = scroll_response['hits']['hits']
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>indices = {"source_index_name": "destination_index_name"}
-</span><span class='line'>
-</span><span class='line'>for key in indices:
-</span><span class='line'>    # print(indices[key])
-</span><span class='line'>    EsClient().copy_mapping(key, indices[key])
-</span><span class='line'>    EsClient().copy_data(key, indices[key])
-</span></code></pre></td></tr></table></div></figure>
+<p>A bastion host, sometimes called a jump box, is a server that provides a single point of access from an external network to the resources located in a private network. A server exposed to an external public network, such as the internet, poses a potential security risk for unauthorized access. It’s important to secure and control access to these servers.</p>
+
+<p>This pattern describes how you can use Session Manager (<a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/access-a-bastion-host-by-using-session-manager-and-amazon-ec2-instance-connect.html">Reference</a>) and Amazon EC2 Instance Connect to securely connect to an Amazon Elastic Compute Cloud (Amazon EC2) bastion host deployed in your AWS account. Session Manager is a capability of AWS Systems Manager. The benefits of this pattern include:</p>
+
+<ul>
+<li><p>The deployed bastion host doesn’t have any open, inbound ports exposed to the public internet. This reduces the potential attack surface.</p></li>
+<li><p>You don’t need to store and maintain long-term Secure Shell (SSH) keys in your AWS account. Instead, each user generates a new SSH key pair each time they connect to the bastion host. AWS Identity and Access Management (IAM) policies that are attached to the user’s AWS credentials control access to the bastion host.</p></li>
+</ul>
 
 
-<h3>Script: Option 2</h3>
+<h2>Setup Guide</h2>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>from elasticsearch import Elasticsearch
-</span><span class='line'>
-</span><span class='line'># Elasticsearch configuration
-</span><span class='line'>staging_host = 'staging_cluster_host'
-</span><span class='line'>staging_port = 9200
-</span><span class='line'>
-</span><span class='line'>feature_host = 'feature_cluster_host'
-</span><span class='line'>feature_port = 9200
-</span><span class='line'>
-</span><span class='line'># Connect to Elasticsearch clusters
-</span><span class='line'>staging_client = Elasticsearch([{'host': staging_host, 'port': staging_port}])
-</span><span class='line'>feature_client = Elasticsearch([{'host': feature_host, 'port': feature_port}])
-</span><span class='line'>
-</span><span class='line'># List all indices in the staging cluster
-</span><span class='line'>staging_indices = staging_client.indices.get_alias().keys()
-</span><span class='line'>
-</span><span class='line'># Clone indices to the feature cluster
-</span><span class='line'>for index in staging_indices:
-</span><span class='line'>    # Retrieve index settings and mappings from the staging cluster
-</span><span class='line'>    index_settings = staging_client.indices.get_settings(index)[index]['settings']
-</span><span class='line'>    index_mappings = staging_client.indices.get_mapping(index)[index]['mappings']
-</span><span class='line'>
-</span><span class='line'>    index_settings[index]["settings"]["index"].pop("creation_date")
-</span><span class='line'>    index_settings[index]["settings"]["index"].pop("provided_name")
-</span><span class='line'>    index_settings[index]["settings"]["index"].pop("uuid")
-</span><span class='line'>    index_settings[index]["settings"]["index"].pop("version")
-</span><span class='line'>
-</span><span class='line'>    # Create the index with the same settings and mappings in the feature cluster
-</span><span class='line'>    feature_client.indices.create(index=index, body={'settings': index_settings, 'mappings': index_mappings})
-</span><span class='line'>
-</span><span class='line'>    # Reindex data from the staging index to the feature index
-</span><span class='line'>    reindex_body = {
-</span><span class='line'>        'source': {'remote': {'host': staging_host, 'port': staging_port}, 'index': index},
-</span><span class='line'>        'dest': {'index': index}
-</span><span class='line'>    }
-</span><span class='line'>    feature_client.reindex(body=reindex_body, request_timeout=3600)  # Increase timeout if needed
-</span><span class='line'>
-</span><span class='line'>    print(f"Index '{index}' cloned to the feature cluster.")
-</span><span class='line'>
-</span><span class='line'>print("Index cloning completed.")</span></code></pre></td></tr></table></div></figure>
+<h3>Prerequisites</h3>
 
+<ol>
+<li><strong>AWS CLI</strong>: Ensure you have the AWS Command Line Interface (CLI) installed on your macOS. If not installed, you can download and install it from the <a href="https://aws.amazon.com/cli/">AWS CLI official website</a>.</li>
+<li><strong>Configure AWS CLI</strong>: If you haven&rsquo;t configured your AWS CLI yet, you need to do it by running the following command and providing your AWS Access Key ID, Secret Access Key, and default region:</li>
+<li><p>The AWS user must have the following role <code>AmazonSSMManagedInstanceCore</code> attached to their user policy</p>
+
+<pre><code>aws configure
+</code></pre>
+
+<p>This step is required to ensure the AWS CLI can authenticate and access your AWS account.</p></li>
+</ol>
+
+
+<h3>Install the Session Manager plugin on macOS</h3>
+
+<p>For other OS follow this <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-macos-overview.html">link</a></p>
+
+<ol>
+<li><p><strong>Download the bundled installer</strong>.</p>
+
+<pre><code>curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" -o "sessionmanager-bundle.zip"
+</code></pre></li>
+<li><p><strong>Unzip the package</strong>.</p>
+
+<pre><code>unzip sessionmanager-bundle.zip
+</code></pre></li>
+<li><p><strong>Run the install command</strong>.</p>
+
+<pre><code>sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
+</code></pre></li>
+<li><p><strong>Remove the bundled installer</strong>.</p>
+
+<pre><code>rm sessionmanager-bundle.zip
+rm -rf sessionmanager-bundle
+</code></pre></li>
+</ol>
+
+
+<h3>Connect to an EC2 Instance using Session Manager</h3>
+
+<pre><code class="``">  aws ssm start-session --target &lt;Instance ID&gt; --region ap-southeast-2
+</code></pre>
+
+<p>That&rsquo;s it. Now you should be able to access EC2 Instance without worrying about port 22.</p>
 </div>
   
   
@@ -376,6 +192,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2024/02/23/locust-in-kubernetes/">Locust in Kubernetes for Performance Testing: A Powerful Combination</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2024/02/03/ssh-into-ec2-instances-without-opening-port-22/">SSH Into EC2 Instances Without Opening Port 22</a>
@@ -411,10 +231,6 @@
     
       <li class="post">
         <a href="/blog/2018/10/07/kubernetes-elasticsearch-scheduled-backup-and-retention-using-curator/">Kubernetes- Elasticsearch Scheduled Backup and Retention Using Curator</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2018/09/23/elasticsearch-autocomplete-example/">Elasticsearch Autocomplete Example</a>
       </li>
     
   </ul>
